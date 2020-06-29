@@ -1,5 +1,7 @@
 /*
-  Copyright (c) 2016, Antonio SJ Musumeci <trapexit@spawn.link>
+  ISC License
+
+  Copyright (c) 2020, Antonio SJ Musumeci <trapexit@spawn.link>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -16,23 +18,25 @@
 
 #pragma once
 
-#include "fh.hpp"
+#include <pthread.h>
 
-#include <string>
-
-class FileInfo : public FH
+namespace mutex
 {
-public:
-  FileInfo(const int   fd_,
-           const char *fusepath_,
-           const int   flags_)
-    : FH(fusepath_),
-      fd(fd_),
-      flags(flags_)
+  class Guard
   {
-  }
+  public:
+    Guard(pthread_mutex_t &lock_)
+      : _lock(lock_)
+    {
+      pthread_mutex_lock(&_lock);
+    }
 
-public:
-  int fd;
-  int flags;
-};
+    ~Guard()
+    {
+      pthread_mutex_unlock(&_lock);
+    }
+
+  private:
+    pthread_mutex_t &_lock;
+  };
+}
